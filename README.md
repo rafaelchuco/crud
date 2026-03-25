@@ -46,6 +46,15 @@ npm start
 
 Servidor por defecto: `http://localhost:10000`
 
+## Documentacion Swagger
+
+- UI local: `http://localhost:10000/docs`
+- JSON OpenAPI local: `http://localhost:10000/docs.json`
+- UI produccion: `https://crud-rhcq.onrender.com/docs`
+- JSON OpenAPI produccion: `https://crud-rhcq.onrender.com/docs.json`
+
+La UI permite probar cada endpoint directamente desde el navegador con ejemplos de request/response.
+
 ## Variables de entorno
 
 Archivo `.env`:
@@ -144,6 +153,16 @@ Respuesta esperada:
 ### 7) Manejo global de errores
 
 - Si ocurre un error no controlado, responde `500` con mensaje `Error interno del servidor`.
+
+### 8) Documentacion OpenAPI
+
+- Metodo: `GET`
+- URL: `/docs`
+- Descripcion: abre Swagger UI con toda la documentacion de endpoints.
+
+- Metodo: `GET`
+- URL: `/docs.json`
+- Descripcion: retorna el documento OpenAPI en formato JSON.
 
 ## Ejemplos para Postman
 
