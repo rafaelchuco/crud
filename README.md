@@ -2,6 +2,14 @@
 
 Backend CRUD completo para la tabla `usuarios` usando solamente el cliente oficial de Supabase (`@supabase/supabase-js`).
 
+## Enlace de produccion (Render)
+
+`https://crud-rhcq.onrender.com/`
+
+Base URL para pruebas en produccion:
+
+- `https://crud-rhcq.onrender.com`
+
 ## Estructura del proyecto
 
 ```bash
@@ -48,28 +56,56 @@ SUPABASE_KEY=TU_ANON_KEY
 PORT=10000
 ```
 
+## Funcionalidades de la API
+
+### 1) Estado de la API (health check)
+
+- Metodo: `GET`
+- URL: `/`
+- Descripcion: confirma que la API esta levantada.
+
+Respuesta esperada:
+
+```json
+{
+  "ok": true,
+  "message": "API de usuarios funcionando correctamente"
+}
+```
+
 ## Endpoints CRUD
 
 ### 1) Obtener todos los usuarios
 
 - Metodo: `GET`
 - URL: `/usuarios`
+- Descripcion: retorna todos los usuarios ordenados por `created_at` (del mas reciente al mas antiguo).
 
 ### 2) Obtener usuario por ID
 
 - Metodo: `GET`
 - URL: `/usuarios/:id`
+- Descripcion: retorna un solo usuario por su `id`.
 
 ### 3) Crear usuario
 
 - Metodo: `POST`
 - URL: `/usuarios`
+- Descripcion: crea un usuario nuevo.
+- Validaciones:
+  - `nombre`, `email`, `telefono` y `direccion` son obligatorios.
+  - `email` debe tener formato valido.
+  - `telefono` debe tener formato valido.
+  - `activo` es opcional y debe ser booleano.
 - Body JSON:
 
 ```json
 {
   "nombre": "Juan Perez",
-  "email": "juan@correo.com"
+  "email": "juan@correo.com",
+  "telefono": "+51987654321",
+  "direccion": "Av. Lima 123",
+  "activo": true
 }
 ```
 
@@ -77,12 +113,19 @@ PORT=10000
 
 - Metodo: `PUT`
 - URL: `/usuarios/:id`
+- Descripcion: actualiza un usuario existente.
+- Validaciones:
+  - debes enviar al menos uno de estos campos: `nombre`, `email`, `telefono`, `direccion`, `activo`.
+  - si envias `email`, debe tener formato valido.
+  - si envias `telefono`, debe tener formato valido.
+  - si envias `activo`, debe ser booleano.
 - Body JSON (uno o ambos):
 
 ```json
 {
   "nombre": "Juan Actualizado",
-  "email": "nuevo@correo.com"
+  "telefono": "+51912345678",
+  "activo": false
 }
 ```
 
@@ -90,44 +133,64 @@ PORT=10000
 
 - Metodo: `DELETE`
 - URL: `/usuarios/:id`
+- Descripcion: elimina un usuario por `id`.
+
+### 6) Manejo de rutas no encontradas
+
+- Metodo: `ANY`
+- URL: cualquier ruta no registrada
+- Respuesta: `404` con mensaje `Ruta no encontrada`.
+
+### 7) Manejo global de errores
+
+- Si ocurre un error no controlado, responde `500` con mensaje `Error interno del servidor`.
 
 ## Ejemplos para Postman
 
 ### Crear usuario (POST)
 
 - URL: `http://localhost:10000/usuarios`
+- URL Render: `https://crud-rhcq.onrender.com/usuarios`
 - Headers: `Content-Type: application/json`
 - Body:
 
 ```json
 {
   "nombre": "Ana Torres",
-  "email": "ana@correo.com"
+  "email": "ana@correo.com",
+  "telefono": "+51945612378",
+  "direccion": "Jr. Primavera 456",
+  "activo": true
 }
 ```
 
 ### Obtener todos (GET)
 
 - URL: `http://localhost:10000/usuarios`
+- URL Render: `https://crud-rhcq.onrender.com/usuarios`
 
 ### Obtener por ID (GET)
 
 - URL: `http://localhost:10000/usuarios/UUID_AQUI`
+- URL Render: `https://crud-rhcq.onrender.com/usuarios/UUID_AQUI`
 
 ### Actualizar (PUT)
 
 - URL: `http://localhost:10000/usuarios/UUID_AQUI`
+- URL Render: `https://crud-rhcq.onrender.com/usuarios/UUID_AQUI`
 - Body:
 
 ```json
 {
-  "nombre": "Ana Actualizada"
+  "nombre": "Ana Actualizada",
+  "direccion": "Calle Nueva 999"
 }
 ```
 
 ### Eliminar (DELETE)
 
 - URL: `http://localhost:10000/usuarios/UUID_AQUI`
+- URL Render: `https://crud-rhcq.onrender.com/usuarios/UUID_AQUI`
 
 ## Configuracion de Supabase paso a paso
 
@@ -148,7 +211,11 @@ PORT=10000
    - `id`: tipo `uuid`, Primary Key, Default: `gen_random_uuid()`
    - `nombre`: tipo `text`, Required
    - `email`: tipo `text`, Required
-   - `created_at`: tipo `timestamp`, Default: `now()`
+  - `telefono`: tipo `text`, Required
+  - `direccion`: tipo `text`, Required
+  - `activo`: tipo `boolean`, Default: `true`
+  - `created_at`: tipo `timestamp`, Default: `now()`
+  - `updated_at`: tipo `timestamp`, Default: `now()`
 4. Guarda los cambios.
 
 Alternativa por SQL:
@@ -159,8 +226,12 @@ create extension if not exists pgcrypto;
 create table if not exists public.usuarios (
   id uuid primary key default gen_random_uuid(),
   nombre text not null,
-  email text not null,
-  created_at timestamp with time zone default now()
+  email text not null unique,
+  telefono text not null,
+  direccion text not null,
+  activo boolean not null default true,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
 );
 ```
 
@@ -201,13 +272,13 @@ En `Environment` agrega:
 1. Guarda la configuracion.
 2. Render construira y desplegara automaticamente.
 3. Prueba:
-   - `GET https://TU-SERVICIO.onrender.com/`
-   - `GET https://TU-SERVICIO.onrender.com/usuarios`
+  - `GET https://crud-rhcq.onrender.com/`
+  - `GET https://crud-rhcq.onrender.com/usuarios`
 
 ## Notas tecnicas
 
 - Se usa `async/await` en todos los controladores.
 - Hay manejo de errores con `try/catch` y respuestas JSON consistentes.
-- Validacion basica para `nombre` y `email`.
+- Validacion para `nombre`, `email`, `telefono`, `direccion` y `activo`.
 - No se usa conexion directa a PostgreSQL.
 - Solo se usa el cliente oficial de Supabase.
